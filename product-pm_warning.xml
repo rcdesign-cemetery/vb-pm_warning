@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<product productid="pm_warning" active="1">
+	<title>Private Mesaage Warning</title>
+	<description>Add warning on private message for admin and moderators</description>
+	<version>0.3</version>
+	<url><![CDATA[http://www.vbulletin.org/forum/misc.php?do=producthelp&pid=pm_warning]]></url>
+	<versioncheckurl><![CDATA[http://www.vbulletin.org/forum/misc.php?do=productcheck&pid=pm_warning]]></versioncheckurl>
+	<dependencies>
+	</dependencies>
+	<codes>
+		<code version="0.1">
+			<installcode><![CDATA[
+                                $db->query(
+                                "CREATE TABLE IF NOT EXISTS `" . TABLE_PREFIX . "pmwarning` (
+                                    `userid` int(10) unsigned NOT NULL,
+                                    `warning` mediumtext,
+                                    PRIMARY KEY  (`userid`)
+                                ) ENGINE=MyISAM" );
+                                $db->query(
+                                "CREATE TABLE IF NOT EXISTS `" . TABLE_PREFIX . "pmwarninglasttime` (
+                                    `userid` INT( 10 ) NOT NULL,
+                                    `recipientid` INT( 10 ) NOT NULL,
+                                    `lasttime` INT( 10 ) NOT NULL,
+                                    PRIMARY KEY ( `userid` , `recipientid` ),
+                                    KEY `recipientid` (`recipientid`)
+                                ) ENGINE = MYISAM" );
+                                
+                        ]]></installcode>
+			<uninstallcode><![CDATA[
+                            $db->query("DROP TABLE IF EXISTS `" . TABLE_PREFIX . "pmwarning`" );
+                            $db->query("DROP TABLE IF EXISTS `" . TABLE_PREFIX . "pmwarninglasttime`" );
+
+                        ]]></uninstallcode>
+		</code>
+	</codes>
+	<templates>
+		<template name="pm_warning_edit" templatetype="template" date="1248707549" username="e.shkuropat" version=""><![CDATA[
+	<form action="private.php?do=insertpmwarning&amp;pmid=$pm[pmid]" method="post" name="vbform"<if condition="!is_browser('webtv')"> onsubmit="return vB_Editor['$editorid'].prepare_submit(this.title.value, 0)"</if>>
+				
+		$warningpreview
+
+		<table class="tborder" cellpadding="$stylevar[cellpadding]" cellspacing="$stylevar[cellspacing]" border="0" width="100%" align="center">
+			<tr>
+				<td class="tcat">$vbphrase[pm_warning_post_new]</td>
+			</tr>
+			<tr>
+				<td class="panelsurround" align="center">
+					<div class="panel">
+						<div align="$stylevar[left]" style="max-width:$stylevar[formwidth]; width:auto !important; width:$stylevar[formwidth_usercp]">
+							<!-- message area -->
+                                                        <!--
+							<div class="smallfont">$vbphrase[message]:</div>
+                                                        -->
+							$messagearea
+							<!-- / message area -->
+						</div>
+					</div>
+
+					<div style="margin-top:$stylevar[cellpadding]px">
+						<input type="hidden" name="s" value="$session[sessionhash]" />
+						<input type="hidden" name="securitytoken" value="$bbuserinfo[securitytoken]" />
+						<input type="hidden" name="do" value="insertpmwarning" />
+						<input type="submit" class="button" name="sbutton" id="{$editorid}_save" value="$vbphrase[save]" accesskey="s" tabindex="1" />
+                                                <input type="button" class="button" value="$vbphrase[delete]" onclick="window.location.href='private.php?do=deletepmwarning&amp;pmid=$pm[pmid]'" <if condition="$show['pm_warning_delete_button_disable']">disabled</if> >
+					</div>
+				</td>
+			</tr>
+		</table>
+		
+		<br />
+	</form>
+
+                ]]></template>
+	</templates>
+	<plugins>
+		<plugin active="1" executionorder="5">
+			<title>Cache template</title>
+			<hookname>cache_templates</hookname>
+			<phpcode><![CDATA[if (THIS_SCRIPT == 'private')
+                        {
+                            if (in_array($_REQUEST['do'], array('insertpmwarning', 'deletepmwarning', 'pmwarning')))
+                            {
+                                $globaltemplates = array_merge($globaltemplates, array(
+                                        'pm_warning_edit',
+                                        'editor_toolbar_on',
+                                        'editor_clientscript',
+                                        'editor_css',
+                                        'editor_jsoptions_font',
+                                        'editor_jsoptions_size',
+                                        'newpost_preview',
+                                        ));
+                            }
+                        }]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Cleanap pmwarninglasttime</title>
+			<hookname>cron_script_cleanup_daily</hookname>
+			<phpcode><![CDATA[
+$db =& $vbulletin->db;
+$dateline = TIMENOW - (24 * 60 * 60 * $vbulletin->options['pm_unnotified_period']);
+$sql = 'DELETE FROM
+            `' . TABLE_PREFIX . 'pmwarninglasttime`
+            WHERE
+                `lasttime` < '. $dateline .
+                ' OR `lasttime` > ' . TIMENOW;
+
+$db->query_write($sql);
+                        ]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Add link to usercp menu</title>
+			<hookname>parse_templates</hookname>
+			<phpcode><![CDATA[
+if (array_key_exists('USERCP_SHELL',$vbulletin->templatecache))
+{
+    $is_user_in_warning_group = true;
+    if (!empty($vbulletin->options['pm_warning_groups']))
+    {
+        $warning_group_list = unserialize($vbulletin->options['pm_warning_groups']);
+        if (0 != end($warning_group_list))
+        {
+            $is_user_in_warning_group = is_member_of($vbulletin->userinfo, $warning_group_list);
+        }
+    }
+    if ($is_user_in_warning_group)
+    {
+        $old_last_item_in_menu = '<tr><td class=\"$navclass[pm_editfolders]\" nowrap=\"nowrap\"><a class=\"smallfont\" href=\"private.php?" . $GLOBALS[\'vbulletin\']->session->vars[\'sessionurl\'] . "do=editfolders\">$vbphrase[edit_folders]</a></td></tr>';
+        $new_last_item_in_menu = '<tr><td class=\"$navclass[pm_editfolders]\" nowrap=\"nowrap\"><a class=\"smallfont\" href=\"private.php?" . $GLOBALS[\'vbulletin\']->session->vars[\'sessionurl\'] . "do=editfolders\">$vbphrase[edit_folders]</a></td></tr>
+                                  <tr><td class=\"$navclass[pm_newpm]\"       nowrap=\"nowrap\"><a class=\"smallfont\" href=\"private.php?" . $GLOBALS[\'vbulletin\']->session->vars[\'sessionurl\'] . "do=pmwarning\">$vbphrase[usercp_menu_pm_warning_edit]</a></td></tr>';
+        $vbulletin->templatecache['USERCP_SHELL'] = str_replace($old_last_item_in_menu, $new_last_item_in_menu, $vbulletin->templatecache['USERCP_SHELL']);
+    }
+}
+]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Get warning message</title>
+			<hookname>private_insertpm_process</hookname>
+			<phpcode><![CDATA[
+
+$vbulletin->input->clean_gpc('p', 'pm_warning_confirmed');
+if ('' == $vbulletin->GPC['preview'] && 1 == count($pmdm->info['recipients']))
+{
+    $is_user_in_ignored_group = false;
+    $warning_ignored_group_list = unserialize($vbulletin->options['pm_warning_ignore_groups']);
+    if (!empty($warning_ignored_group_list))
+    {
+        
+        $is_user_in_ignored_group = is_member_of($vbulletin->userinfo, $warning_ignored_group_list);
+    }
+
+    if (!$is_user_in_ignored_group)
+    {
+        $recipient_info = current($pmdm->info['recipients']);
+        $user_id = $vbulletin->userinfo['userid'];
+        $recipient_id = $recipient_info['userid'];
+        if (is_null($vbulletin->GPC['pm_warning_confirmed']))
+        {
+            $is_warning_need = true;
+            $warning_group_list = unserialize($vbulletin->options['pm_warning_groups']);
+            if (!empty($warning_group_list))
+            {
+                $is_recipient_in_warning_group = true;
+                if (0 != end($warning_group_list))
+                {
+                    $is_recipient_in_warning_group = is_member_of( $recipient_info, $warning_group_list);
+                }
+                /**
+                 * if ($is_recipient_in_warning_group && (3 !== fetch_user_relationship($recipient_id, $user_id)))
+                 * this expanded variant of condition, can be used in future
+                 */
+                if ($is_recipient_in_warning_group)
+                {
+                    $is_warning_need = true;
+                    $period = (int)$vbulletin->options['pm_unnotified_period'];
+                    if (0 !== $period)
+                    {
+                        $dateline = TIMENOW - (24 * 60 * 60 * $period);
+                        $sql = "SELECT `lasttime`
+                                        FROM " . TABLE_PREFIX . "`pmwarninglasttime`
+                                        WHERE
+                                            `userid` = " . $user_id .
+                                            ' AND `recipientid` = ' . $recipient_id .
+                                            ' AND `lasttime` > ' . $dateline;
+                        $row = $db->query_first_slave($sql);
+                        if (!empty($row['lasttime']))
+                        {
+                            $is_warning_need = false;
+                        }
+                    }
+                } //if ($is_recipient_in_warning_group)
+                else
+                {
+                    $is_warning_need = false;
+                }
+            } //if (!empty($vbulletin->options['pm_warning_groups']) AND "a:1:{i:0;i:0;}" !== $vbulletin->options['pm_warning_groups'])
+            if ($is_warning_need)
+            {
+                //Get warning messge by user
+                $sql = 'SELECT warning FROM `' . TABLE_PREFIX . 'pmwarning` WHERE userid = ' . $recipient_id;
+                $row = $db->query_first_slave($sql);
+                $warning_msg = (!empty($row) ? $row['warning'] : null);
+                if (!is_null($warning_msg))
+                {
+                    $vbulletin->GPC['preview'] = true;
+                }
+            }
+        } //if (is_null($vbulletin->GPC['pm_warning_confirmed']))
+        else
+        {
+        //Write warning into to db
+            $sql = 'REPLACE INTO
+                        `' . TABLE_PREFIX . 'pmwarninglasttime`
+                    SET
+                        `userid` = "' . $user_id . '",
+                        `recipientid` = "' . $recipient_id . '",
+                        `lasttime` = ' . TIMENOW;
+            $db->query_write($sql);
+        }
+    }
+}
+                        ]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Show warning, if it need</title>
+			<hookname>private_newpm_start</hookname>
+			<phpcode><![CDATA[
+        if (defined('PMPREVIEW') && isset($warning_msg))
+        {
+            $warning = array();
+            $warning['message'] = $warning_msg;
+            $warning['disablesmilies'] =& $vbulletin->GPC['disablesmilies'];
+
+            // next 3 line remove  notes icon
+            // @todo find a better solution
+            $warning['iconpath'] = '';
+            $show['messageicon'] = false;
+            $vbulletin->options['showdeficon'] = '';
+
+            $vbphrase['preview'] = $vbphrase['pm_warning_from_recipient'];
+
+            $preview = process_post_preview($warning);
+            $preview.= construct_hidden_var_field_value('pm_warning_confirmed', 1);
+        }
+                        ]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Insert handlers for warning add/edit/delete</title>
+			<hookname>private_start</hookname>
+			<phpcode><![CDATA[
+if ($_REQUEST['do'] == 'insertpmwarning')
+{
+    $vbulletin->input->clean_array_gpc('p', array(
+		'wysiwyg'        => TYPE_BOOL,
+		'message'        => TYPE_STR,
+	));
+    if ($vbulletin->GPC['wysiwyg'])
+    {
+        require_once(DIR . '/includes/functions_wysiwyg.php');
+	$vbulletin->GPC['message'] = convert_wysiwyg_html_to_bbcode($vbulletin->GPC['message'], $vbulletin->options['privallowhtml']);
+    }
+    $warning_msg = $vbulletin->GPC['message'];
+
+    if ($warning_msg !== '')
+    {
+        $user_id = $vbulletin->userinfo['userid'];
+
+        //Write warning to db
+        $sql = 'REPLACE INTO `' . TABLE_PREFIX . 'pmwarning`
+                    SET
+                    `userid` = "' . $user_id . '",
+                    `warning` = "' . $db->escape_string($warning_msg) . '"';
+        $db->query_write($sql);
+        //Delete record about last warning read time
+        $sql = 'DELETE FROM`' . TABLE_PREFIX . 'pmwarninglasttime` WHERE `recipientid` = '. $user_id;
+        $db->query_write($sql);
+        $vbulletin->url = 'private.php?' . $vbulletin->session->vars['sessionurl'] . 'do=pmwarning';
+        eval(print_standard_redirect('pm_setting_saved'));
+    }
+    else
+    {
+        $_REQUEST['do'] = 'deletepmwarning';
+    }
+}
+
+if ($_REQUEST['do'] == 'deletepmwarning')
+{
+    $user_id = $vbulletin->userinfo['userid'];
+    //Delete warning from db
+    $sql = 'DELETE FROM `' . TABLE_PREFIX . 'pmwarning` WHERE `userid` = '. $user_id;
+    $db->query_write($sql);
+    //Delete record about last warning read time
+    $sql = 'DELETE FROM`' . TABLE_PREFIX . 'pmwarninglasttime` WHERE `recipientid` = '. $user_id;
+    $db->query_write($sql);
+
+    $warning_msg = '';
+    $vbulletin->url = 'private.php?' . $vbulletin->session->vars['sessionurl'] . 'do=pmwarning';
+    eval(print_standard_redirect('pm_setting_saved'));
+}
+
+if ($_REQUEST['do'] == 'pmwarning')
+{
+    $vbulletin->input->clean_array_gpc('p', array(
+		'wysiwyg'        => TYPE_BOOL,
+                'disablesmilies' => TYPE_BOOL,
+		'message'        => TYPE_STR,
+	));
+
+    $warning = array();
+    $user_id = $vbulletin->userinfo['userid'];
+    //Get warning messge by user
+    $sql = 'SELECT warning FROM ' . TABLE_PREFIX . 'pmwarning WHERE userid = ' . $user_id;
+    $row = $db->query_first_slave($sql);
+    $warning['message'] = (!empty($row) ? $row['warning'] : null);
+    
+    require_once(DIR . '/includes/functions_editor.php');
+    // set warning message box width to usercp size
+    $stylevar['messagewidth'] = $stylevar['messagewidth_usercp'];
+    $editorid = construct_edit_toolbar($warning['message'], 0, 'nonforum', false);
+
+    if ($warning['message'] == '')
+    {
+        $warning['message'] = $vbphrase['pm_warning_empty'];
+        $warning['message'] = $vbphrase['pm_setting_saved'];
+        $show['pm_warning_delete_button_disable'] = true;
+    }
+    require_once(DIR . '/includes/functions_newpost.php');
+    // next 3 line remove  notes icon
+    // @todo find a better solution
+    $warning['iconpath'] = '';
+    $show['messageicon'] = false;
+    $vbulletin->options['showdeficon'] = '';
+
+    $vbphrase['preview'] = $vbphrase['pm_warning_status'];
+    $warningpreview = process_post_preview($warning);
+    $templatename = 'pm_warning_edit';
+}
+                        
+                        ]]></phpcode>
+		</plugin>
+	</plugins>
+	<phrases>
+		<phrasetype name="GLOBAL" fieldname="global">
+			<phrase name="usercp_menu_pm_warning_edit" date="1254455588" username="Vitaly" version=""><![CDATA[Auto warning for PM]]></phrase>
+		</phrasetype>
+		<phrasetype name="Private Messaging" fieldname="pm">
+                        <phrase name="pm_setting_saved" date="1254454656" username="Vitaly" version=""><![CDATA[Setting was saved.]]></phrase>
+			<phrase name="pm_warning_empty" date="1254454656" username="Vitaly" version=""><![CDATA[No active warnig.]]></phrase>
+			<phrase name="pm_warning_from_recipient" date="1254455392" username="Vitaly" version=""><![CDATA[If still wish to send message, press button once again]]></phrase>
+			<phrase name="pm_warning_post_new" date="1254454988" username="Vitaly" version=""><![CDATA[Edit warning text]]></phrase>
+			<phrase name="pm_warning_status" date="1254455124" username="Vitaly" version=""><![CDATA[This text will be shown to everyone, who try to send you private message]]></phrase>
+		</phrasetype>
+		<phrasetype name="vBulletin Settings" fieldname="vbsettings">
+			<phrase name="setting_pm_unnotified_period_desc" date="1254454484" username="Vitaly" version=""><![CDATA[Hide warning for XX days for each person, when shown. If empty - always show.]]></phrase>
+			<phrase name="setting_pm_unnotified_period_title" date="1254454338" username="Vitaly" version=""><![CDATA[Warning Thresold ]]></phrase>
+			<phrase name="setting_pm_warning_groups_desc" date="1254485839" username="Vitaly" version=""><![CDATA[Select groups, that can use PM warning. Empty - enable to everyone.]]></phrase>
+			<phrase name="setting_pm_warning_groups_title" date="1254454162" username="Vitaly" version=""><![CDATA[Enabled Groups]]></phrase>
+			<phrase name="setting_pm_warning_ignore_groups_desc" date="1254485969" username="Vitaly" version=""><![CDATA[Select groups, which always ignore warning.]]></phrase>
+			<phrase name="setting_pm_warning_ignore_groups_title" date="1254485913" username="Vitaly" version=""><![CDATA[Ignored Groups]]></phrase>
+			<phrase name="settinggroup_pm_warning" date="1254453937" username="e.shkuropat" version=""><![CDATA[Private Message Warning]]></phrase>
+		</phrasetype>
+	</phrases>
+	<options>
+		<settinggroup name="pm_warning" displayorder="65535">
+			<setting varname="pm_warning_ignore_groups" displayorder="20">
+				<datatype>free</datatype>
+				<optioncode>usergroup:5</optioncode>
+			</setting>
+			<setting varname="pm_warning_groups" displayorder="20">
+				<datatype>free</datatype>
+				<optioncode>usergroup:5</optioncode>
+				<defaultvalue>a:3:{i:0;i:5;i:1;i:6;i:2;i:7;}</defaultvalue>
+			</setting>
+			<setting varname="pm_unnotified_period" displayorder="30">
+				<datatype>free</datatype>
+				<defaultvalue>7</defaultvalue>
+			</setting>
+		</settinggroup>
+	</options>
+	<helptopics>
+	</helptopics>
+	<cronentries>
+	</cronentries>
+	<faqentries>
+	</faqentries>
+	<templateedits>
+	</templateedits>
+</product>
