@@ -91,7 +91,7 @@ if ('pmwarning' == $_REQUEST['do'] || $is_work_with_pmwarning)
     $dosmilies = false;
   }
 
-  $parsedtext = 'manevich notice';
+  $parsedtext = 'pmwarning';
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="10">
