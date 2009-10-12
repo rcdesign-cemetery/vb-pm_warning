@@ -2,7 +2,7 @@
 
 <product productid="pm_warning" active="1">
 	<title>Private Mesaage Warning</title>
-	<description>Add warning on private message for admin and moderators</description>
+	<description>Addon to show personal notifications prior to send PM.</description>
 	<version>0.3</version>
 	<url><![CDATA[http://www.vbulletin.org/forum/misc.php?do=producthelp&pid=pm_warning]]></url>
 	<versioncheckurl><![CDATA[http://www.vbulletin.org/forum/misc.php?do=productcheck&pid=pm_warning]]></versioncheckurl>
@@ -74,12 +74,41 @@
                 ]]></template>
 	</templates>
 	<plugins>
+		<plugin active="1" executionorder="1">
+			<title>Advanced BBCode Permissions Fix (step 1)</title>
+			<hookname>bbcode_parse_start</hookname>
+			<phpcode><![CDATA[
+global $is_work_with_pmwarning;
+if ('pmwarning' == $_REQUEST['do'] || $is_work_with_pmwarning)
+{
+  $dohtml = $this->registry->options['allowhtml'];
+  $dobbcode = $this->registry->options['allowbbcode'];
+  $dobbimagecode = $this->registry->options['allowbbimagecode'];
+  $dosmilies = $this->registry->options['allowsmilies'];
+
+  if (!$allowsmilie)
+  {
+    $dosmilies = false;
+  }
+
+  $parsedtext = 'manevich notice';
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="10">
+			<title>Advanced BBCode Permissions Fix (step 2)</title>
+			<hookname>bbcode_parse_start</hookname>
+			<phpcode><![CDATA[
+if ('pmwarning' == $_REQUEST['do'] || $is_work_with_pmwarning)
+{
+  $parsedtext = '';
+}]]></phpcode>
+		</plugin>
 		<plugin active="1" executionorder="5">
 			<title>Cache template</title>
 			<hookname>cache_templates</hookname>
 			<phpcode><![CDATA[if (THIS_SCRIPT == 'private')
                         {
-                            if (in_array($_REQUEST['do'], array('insertpmwarning', 'deletepmwarning', 'pmwarning')))
+                            if ('pmwarning' == $_REQUEST['do'])
                             {
                                 $globaltemplates = array_merge($globaltemplates, array(
                                         'pm_warning_edit',
@@ -136,7 +165,7 @@ if (array_key_exists('USERCP_SHELL',$vbulletin->templatecache))
 		<plugin active="1" executionorder="5">
 			<title>Get warning message</title>
 			<hookname>private_insertpm_process</hookname>
-			<phpcode><![CDATA[
+			<phpcode><![CDATA[$is_work_with_pmwarning =false;
 
 $vbulletin->input->clean_gpc('p', 'pm_warning_confirmed');
 if ('' == $vbulletin->GPC['preview'] && 1 == count($pmdm->info['recipients']))
@@ -204,6 +233,7 @@ if ('' == $vbulletin->GPC['preview'] && 1 == count($pmdm->info['recipients']))
                 {
                     $vbulletin->GPC['preview'] = true;
                 }
+                $is_work_with_pmwarning = true;
             }
         } //if (is_null($vbulletin->GPC['pm_warning_confirmed']))
         else
@@ -218,8 +248,7 @@ if ('' == $vbulletin->GPC['preview'] && 1 == count($pmdm->info['recipients']))
             $db->query_write($sql);
         }
     }
-}
-                        ]]></phpcode>
+}]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
 			<title>Show warning, if it need</title>
@@ -344,7 +373,7 @@ if ($_REQUEST['do'] == 'pmwarning')
 			<phrase name="usercp_menu_pm_warning_edit" date="1254455588" username="Vitaly" version=""><![CDATA[Auto warning for PM]]></phrase>
 		</phrasetype>
 		<phrasetype name="Private Messaging" fieldname="pm">
-                        <phrase name="pm_setting_saved" date="1254454656" username="Vitaly" version=""><![CDATA[Setting was saved.]]></phrase>
+			<phrase name="pm_setting_saved" date="1254454656" username="Vitaly" version=""><![CDATA[Setting was saved.]]></phrase>
 			<phrase name="pm_warning_empty" date="1254454656" username="Vitaly" version=""><![CDATA[No active warnig.]]></phrase>
 			<phrase name="pm_warning_from_recipient" date="1254455392" username="Vitaly" version=""><![CDATA[If still wish to send message, press button once again]]></phrase>
 			<phrase name="pm_warning_post_new" date="1254454988" username="Vitaly" version=""><![CDATA[Edit warning text]]></phrase>
@@ -362,14 +391,14 @@ if ($_REQUEST['do'] == 'pmwarning')
 	</phrases>
 	<options>
 		<settinggroup name="pm_warning" displayorder="65535">
-			<setting varname="pm_warning_ignore_groups" displayorder="20">
-				<datatype>free</datatype>
-				<optioncode>usergroup:5</optioncode>
-			</setting>
 			<setting varname="pm_warning_groups" displayorder="20">
 				<datatype>free</datatype>
 				<optioncode>usergroup:5</optioncode>
 				<defaultvalue>a:3:{i:0;i:5;i:1;i:6;i:2;i:7;}</defaultvalue>
+			</setting>
+			<setting varname="pm_warning_ignore_groups" displayorder="20">
+				<datatype>free</datatype>
+				<optioncode>usergroup:5</optioncode>
 			</setting>
 			<setting varname="pm_unnotified_period" displayorder="30">
 				<datatype>free</datatype>
