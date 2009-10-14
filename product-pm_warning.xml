@@ -350,7 +350,6 @@ if ($_REQUEST['do'] == 'pmwarning')
     if ($warning['message'] == '')
     {
         $warning['message'] = $vbphrase['pm_warning_empty'];
-        $warning['message'] = $vbphrase['pm_setting_saved'];
         $show['pm_warning_delete_button_disable'] = true;
     }
     require_once(DIR . '/includes/functions_newpost.php');
