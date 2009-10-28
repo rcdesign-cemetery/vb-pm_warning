@@ -2,8 +2,8 @@
 
 <product productid="pm_warning" active="1">
 	<title>Private Mesaage Warning</title>
-	<description>Addon to show personal notifications prior to send PM.</description>
-	<version>0.3</version>
+	<description>Add warning on private message for admin and moderators</description>
+	<version>0.4</version>
 	<url><![CDATA[http://www.vbulletin.org/forum/misc.php?do=producthelp&pid=pm_warning]]></url>
 	<versioncheckurl><![CDATA[http://www.vbulletin.org/forum/misc.php?do=productcheck&pid=pm_warning]]></versioncheckurl>
 	<dependencies>
@@ -74,35 +74,6 @@
                 ]]></template>
 	</templates>
 	<plugins>
-		<plugin active="1" executionorder="1">
-			<title>Advanced BBCode Permissions Fix (step 1)</title>
-			<hookname>bbcode_parse_start</hookname>
-			<phpcode><![CDATA[
-global $is_work_with_pmwarning;
-if ('pmwarning' == $_REQUEST['do'] || $is_work_with_pmwarning)
-{
-  $dohtml = $this->registry->options['allowhtml'];
-  $dobbcode = $this->registry->options['allowbbcode'];
-  $dobbimagecode = $this->registry->options['allowbbimagecode'];
-  $dosmilies = $this->registry->options['allowsmilies'];
-
-  if (!$allowsmilie)
-  {
-    $dosmilies = false;
-  }
-
-  $parsedtext = 'pmwarning';
-}]]></phpcode>
-		</plugin>
-		<plugin active="1" executionorder="10">
-			<title>Advanced BBCode Permissions Fix (step 2)</title>
-			<hookname>bbcode_parse_start</hookname>
-			<phpcode><![CDATA[
-if ('pmwarning' == $_REQUEST['do'] || $is_work_with_pmwarning)
-{
-  $parsedtext = '';
-}]]></phpcode>
-		</plugin>
 		<plugin active="1" executionorder="5">
 			<title>Cache template</title>
 			<hookname>cache_templates</hookname>
@@ -253,25 +224,28 @@ if ('' == $vbulletin->GPC['preview'] && 1 == count($pmdm->info['recipients']))
 		<plugin active="1" executionorder="5">
 			<title>Show warning, if it need</title>
 			<hookname>private_newpm_start</hookname>
-			<phpcode><![CDATA[
-        if (defined('PMPREVIEW') && isset($warning_msg))
-        {
-            $warning = array();
-            $warning['message'] = $warning_msg;
-            $warning['disablesmilies'] =& $vbulletin->GPC['disablesmilies'];
+			<phpcode><![CDATA[if (defined('PMPREVIEW') && isset($warning_msg))
+{
+	$disablesmilies =& $vbulletin->GPC['disablesmilies'];
 
-            // next 3 line remove  notes icon
-            // @todo find a better solution
-            $warning['iconpath'] = '';
-            $show['messageicon'] = false;
-            $vbulletin->options['showdeficon'] = '';
+	$vbphrase['preview'] = $vbphrase['pm_warning_from_recipient'];
 
-            $vbphrase['preview'] = $vbphrase['pm_warning_from_recipient'];
+	require_once(DIR . '/includes/class_bbcode.php');
+	$bbcode_parser =& new vB_BbCodeParser($vbulletin, fetch_tag_list());
+	$recipient_info = current($pmdm->info['recipients']);
+	$bbcode_parser->set_parse_userinfo($recipient_info);
 
-            $preview = process_post_preview($warning);
-            $preview.= construct_hidden_var_field_value('pm_warning_confirmed', 1);
-        }
-                        ]]></phpcode>
+	$previewmessage = $bbcode_parser->parse($warning_msg, $foruminfo['forumid'], $disablesmilies);
+
+	$show['messageicon'] = false;
+	$show['errors'] = false;
+	$preview = '';
+	if ($previewmessage != '')
+	{
+		eval('$preview = "' . fetch_template('newpost_preview')."\";");
+	}
+	$preview.= construct_hidden_var_field_value('pm_warning_confirmed', 1);
+}]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
 			<title>Insert handlers for warning add/edit/delete</title>
@@ -350,6 +324,7 @@ if ($_REQUEST['do'] == 'pmwarning')
     if ($warning['message'] == '')
     {
         $warning['message'] = $vbphrase['pm_warning_empty'];
+        $warning['message'] = $vbphrase['pm_setting_saved'];
         $show['pm_warning_delete_button_disable'] = true;
     }
     require_once(DIR . '/includes/functions_newpost.php');
@@ -390,14 +365,14 @@ if ($_REQUEST['do'] == 'pmwarning')
 	</phrases>
 	<options>
 		<settinggroup name="pm_warning" displayorder="65535">
+			<setting varname="pm_warning_ignore_groups" displayorder="20">
+				<datatype>free</datatype>
+				<optioncode>usergroup:5</optioncode>
+			</setting>
 			<setting varname="pm_warning_groups" displayorder="20">
 				<datatype>free</datatype>
 				<optioncode>usergroup:5</optioncode>
 				<defaultvalue>a:3:{i:0;i:5;i:1;i:6;i:2;i:7;}</defaultvalue>
-			</setting>
-			<setting varname="pm_warning_ignore_groups" displayorder="20">
-				<datatype>free</datatype>
-				<optioncode>usergroup:5</optioncode>
 			</setting>
 			<setting varname="pm_unnotified_period" displayorder="30">
 				<datatype>free</datatype>
