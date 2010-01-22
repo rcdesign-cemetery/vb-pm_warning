@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <product productid="pm_warning" active="1">
-	<title>Private Mesaage Warning</title>
-	<description>Add warning on private message for admin and moderators</description>
+	<title>Private Message Warning</title>
+	<description>Shows custom warning, when someone try to send PM</description>
 	<version>0.4</version>
 	<url><![CDATA[http://www.vbulletin.org/forum/misc.php?do=producthelp&pid=pm_warning]]></url>
 	<versioncheckurl><![CDATA[http://www.vbulletin.org/forum/misc.php?do=productcheck&pid=pm_warning]]></versioncheckurl>
+	<apm_releasedate>0</apm_releasedate>
+	<apm_author />
+	<apm_relatedurl />
+	<apm_extrainfo />
+	<apm_extraedit />
 	<dependencies>
 	</dependencies>
 	<codes>
