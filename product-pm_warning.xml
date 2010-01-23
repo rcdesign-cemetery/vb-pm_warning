@@ -3,7 +3,7 @@
 <product productid="pm_warning" active="1">
 	<title>Private Message Warning</title>
 	<description>Shows custom warning, when someone try to send PM</description>
-	<version>0.4</version>
+	<version>0.5</version>
 	<url><![CDATA[http://www.vbulletin.org/forum/misc.php?do=producthelp&pid=pm_warning]]></url>
 	<versioncheckurl><![CDATA[http://www.vbulletin.org/forum/misc.php?do=productcheck&pid=pm_warning]]></versioncheckurl>
 	<apm_releasedate>0</apm_releasedate>
@@ -181,10 +181,10 @@ if ('' == $vbulletin->GPC['preview'] && 1 == count($pmdm->info['recipients']))
                     if (0 !== $period)
                     {
                         $dateline = TIMENOW - (24 * 60 * 60 * $period);
-                        $sql = "SELECT `lasttime`
-                                        FROM " . TABLE_PREFIX . "`pmwarninglasttime`
+                        $sql = 'SELECT `lasttime`
+                                        FROM `' . TABLE_PREFIX . 'pmwarninglasttime`
                                         WHERE
-                                            `userid` = " . $user_id .
+                                            `userid` = ' . $user_id .
                                             ' AND `recipientid` = ' . $recipient_id .
                                             ' AND `lasttime` > ' . $dateline;
                         $row = $db->query_first_slave($sql);
