@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<language name="Russian (RU)" vbversion="3.8.4" product="pm_warning" type="custom">
+	<settings>
+		<options><![CDATA[1]]></options>
+		<languagecode><![CDATA[ru]]></languagecode>
+		<charset><![CDATA[UTF-8]]></charset>
+		<imagesoverride />
+		<dateoverride><![CDATA[d.m.Y]]></dateoverride>
+		<timeoverride><![CDATA[H:i]]></timeoverride>
+		<registereddateoverride><![CDATA[d.m.Y]]></registereddateoverride>
+		<calformat1override><![CDATA[j F Y]]></calformat1override>
+		<calformat2override><![CDATA[j F]]></calformat2override>
+		<logdateoverride><![CDATA[H:i, d.m.Y]]></logdateoverride>
+		<locale />
+		<decimalsep><![CDATA[.]]></decimalsep>
+		<thousandsep><![CDATA[,]]></thousandsep>
+	</settings>
+	<phrasetype name="GLOBAL" fieldname="global">
+		<phrase name="usercp_menu_pm_warning_edit" date="1254455588" username="Vitaly"><![CDATA[Автопредупреждение в ЛС]]></phrase>
+	</phrasetype>
+	<phrasetype name="Private Messaging" fieldname="pm">
+		<phrase name="pm_warning_empty" date="1269515773" username="varnak" version="0.6"><![CDATA[Предупреждение отсутствует.]]></phrase>
+		<phrase name="pm_warning_from_recipient" date="1254455392" username="Vitaly"><![CDATA[Если уверены, что хотите отправить сообщение, нажмите кнопку еще раз]]></phrase>
+		<phrase name="pm_warning_post_new" date="1254454988" username="Vitaly"><![CDATA[Редактировать текст предупреждения]]></phrase>
+		<phrase name="pm_warning_status" date="1254455124" username="Vitaly"><![CDATA[Этот текст увидет каждый, кто попробует отправить сам личное собщение]]></phrase>
+	</phrasetype>
+	<phrasetype name="vBulletin Settings" fieldname="vbsettings">
+		<phrase name="setting_pm_unnotified_period_desc" date="1254454484" username="Vitaly"><![CDATA[Скрывать предупреждение на ХХ дней после показа. Если пусто - всегда показывать.]]></phrase>
+		<phrase name="setting_pm_unnotified_period_title" date="1254454338" username="Vitaly"><![CDATA[Лаг отображения]]></phrase>
+		<phrase name="setting_pm_warning_groups_desc" date="1269512251" username="Vitaly"><![CDATA[Выберите группы, которые могут использовать автопредупреждение для личных сообщений.]]></phrase>
+		<phrase name="setting_pm_warning_groups_title" date="1254454162" username="Vitaly"><![CDATA[Включить для групп]]></phrase>
+		<phrase name="setting_pm_warning_ignore_groups_desc" date="1269512671" username="Vitaly"><![CDATA[Выберите группы, которым никогда не показывается предупреждение (они не увидят предупреждение, даже если установлено).]]></phrase>
+		<phrase name="setting_pm_warning_ignore_groups_title" date="1254485913" username="Vitaly"><![CDATA[Игнорируемые группы]]></phrase>
+		<phrase name="setting_pm_warning_user_ids_desc" date="1269512463" username="Vitaly"><![CDATA[Выберите ID пользователей, которые могут использовать предупреждения.<br />
+<br />
+Внимание: Разделяйте идентификаторы запятой. Например: 1,3,10]]></phrase>
+		<phrase name="setting_pm_warning_user_ids_title" date="1269438334" username="Vitaly"><![CDATA[Включить для пользователей]]></phrase>
+	</phrasetype>
+</language>
