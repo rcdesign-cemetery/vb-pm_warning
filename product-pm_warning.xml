@@ -371,7 +371,6 @@ if ($_REQUEST['do'] == 'pmwarning')
     if ($warning['message'] == '')
     {
         $warning['message'] = $vbphrase['pm_warning_empty'];
-        $warning['message'] = $vbphrase['pm_setting_saved'];
         $show['pm_warning_delete_button_disable'] = true;
     }
     require_once(DIR . '/includes/functions_newpost.php');
@@ -393,7 +392,7 @@ if ($_REQUEST['do'] == 'pmwarning')
 		</phrasetype>
 		<phrasetype name="Private Messaging" fieldname="pm">
 			<phrase name="pm_setting_saved" date="1254454656" username="Vitaly" version=""><![CDATA[Setting was saved.]]></phrase>
-			<phrase name="pm_warning_empty" date="1254454656" username="Vitaly" version=""><![CDATA[No active warnig.]]></phrase>
+			<phrase name="pm_warning_empty" date="1269515773" username="varnak" version="0.6"><![CDATA[No active warning.]]></phrase>
 			<phrase name="pm_warning_from_recipient" date="1254455392" username="Vitaly" version=""><![CDATA[If still wish to send message, press button once again]]></phrase>
 			<phrase name="pm_warning_post_new" date="1254454988" username="Vitaly" version=""><![CDATA[Edit warning text]]></phrase>
 			<phrase name="pm_warning_status" date="1254455124" username="Vitaly" version=""><![CDATA[This text will be shown to everyone, who try to send you private message]]></phrase>
