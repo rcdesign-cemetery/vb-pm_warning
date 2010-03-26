@@ -119,26 +119,20 @@ $db->query_write($sql);
 			<phpcode><![CDATA[if (array_key_exists('USERCP_SHELL',$vbulletin->templatecache))
 {
     $need_warning_link = false;
-    $is_user_in_warning_group = false;
-    $is_user_in_warning_users_list = false;
     $warning_group_list = unserialize($vbulletin->options['pm_warning_groups']);
-    if (!empty($warning_group_list))
-    {
-        if (0 != end($warning_group_list))
-        {
-            $is_user_in_warning_group = is_member_of($vbulletin->userinfo, $warning_group_list);
-        }
-    }
-    if (!empty($vbulletin->options['pm_warning_user_ids']))
-    {
-        $warning_user_ids = explode(',', $vbulletin->options['pm_warning_user_ids']);
-        $is_user_in_warning_users_list = in_array($vbulletin->userinfo['userid'], $warning_user_ids);
-    }
-    if ($is_user_in_warning_group OR $is_user_in_warning_users_list)
+    if (!empty($warning_group_list) AND is_member_of($vbulletin->userinfo, $warning_group_list))
     {
         $need_warning_link = true;
     }
-
+    if (!empty($vbulletin->options['pm_warning_user_ids']))
+    {
+        $warning_user_ids = array_map('intval', (explode(',', $vbulletin->options['pm_warning_user_ids'])));
+        if (in_array($vbulletin->userinfo['userid'], $warning_user_ids))
+        {
+            $need_warning_link = true;
+        }
+    }
+    
     if ($need_warning_link)
     {
         $old_last_item_in_menu = '<tr><td class=\"$navclass[pm_editfolders]\" nowrap=\"nowrap\"><a class=\"smallfont\" href=\"private.php?" . $GLOBALS[\'vbulletin\']->session->vars[\'sessionurl\'] . "do=editfolders\">$vbphrase[edit_folders]</a></td></tr>';
@@ -171,25 +165,18 @@ if ('' == $vbulletin->GPC['preview'] && 1 == count($pmdm->info['recipients']))
         if (is_null($vbulletin->GPC['pm_warning_confirmed']))
         {
             $is_warning_need = false;
-            $is_recipient_in_warning_group = false;
-            $is_recipient_in_warning_users_list = false;
-
             $warning_group_list = unserialize($vbulletin->options['pm_warning_groups']);
-            if (!empty($warning_group_list))
+            if (!empty($warning_group_list) AND is_member_of($recipient_info, $warning_group_list))
             {
-                if (0 != end($warning_group_list))
-                {
-                    $is_recipient_in_warning_group = is_member_of( $recipient_info, $warning_group_list);
-                }
+                $is_warning_need = true;
             }
             if (!empty($vbulletin->options['pm_warning_user_ids']))
             {
-                $warning_user_ids = explode(',', $vbulletin->options['pm_warning_user_ids']);
-                $is_recipient_in_warning_users_list = in_array($recipient_info['userid'], $warning_user_ids);
-            }
-            if ($is_recipient_in_warning_group OR $is_recipient_in_warning_users_list)
-            {
-                $is_warning_need = true;
+                $warning_user_ids = array_map('intval', (explode(',', $vbulletin->options['pm_warning_user_ids'])));
+                if (in_array($recipient_id, $warning_user_ids))
+                {
+                    $is_warning_need = true;
+                }
             }
             /**
              * if ($is_warning_need && (3 !== fetch_user_relationship($recipient_id, $user_id)))
@@ -273,26 +260,20 @@ if ('' == $vbulletin->GPC['preview'] && 1 == count($pmdm->info['recipients']))
 			<phpcode><![CDATA[if (($_REQUEST['do'] == 'insertpmwarning') OR $_REQUEST['do'] == 'deletepmwarning' OR $_REQUEST['do'] == 'pmwarning')
 {
     $can_warning_manage = false;
-    $is_user_in_warning_group = false;
-    $is_user_in_warning_users_list = false;
     $warning_group_list = unserialize($vbulletin->options['pm_warning_groups']);
-    if (!empty($warning_group_list))
-    {
-        if (0 != end($warning_group_list))
-        {
-            $is_user_in_warning_group = is_member_of($vbulletin->userinfo, $warning_group_list);
-        }
-    }
-    if (!empty($vbulletin->options['pm_warning_user_ids']))
-    {
-        $warning_user_ids = explode(',', $vbulletin->options['pm_warning_user_ids']);
-        $is_user_in_warning_users_list = in_array($vbulletin->userinfo['userid'], $warning_user_ids);
-    }
-    if ($is_user_in_warning_group OR $is_user_in_warning_users_list)
+    if (!empty($warning_group_list) AND is_member_of($vbulletin->userinfo, $warning_group_list))
     {
         $can_warning_manage = true;
     }
-
+    if (!empty($vbulletin->options['pm_warning_user_ids']))
+    {
+        $warning_user_ids = array_map('intval', (explode(',', $vbulletin->options['pm_warning_user_ids'])));
+        if (in_array($vbulletin->userinfo['userid'], $warning_user_ids))
+        {
+            $can_warning_manage = true;
+        }
+    }
+    
     if (!$can_warning_manage)
     {
         print_no_permission();
