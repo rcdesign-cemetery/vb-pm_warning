@@ -3,7 +3,7 @@
 <product productid="pm_warning" active="1">
 	<title>Private Message Warning</title>
 	<description>Shows custom warning, when someone try to send PM</description>
-	<version>0.6</version>
+	<version>0.7</version>
 	<url><![CDATA[http://www.vbulletin.org/forum/misc.php?do=producthelp&pid=pm_warning]]></url>
 	<versioncheckurl><![CDATA[http://www.vbulletin.org/forum/misc.php?do=productcheck&pid=pm_warning]]></versioncheckurl>
 	<apm_releasedate>0</apm_releasedate>
@@ -145,7 +145,11 @@ $db->query_write($sql);
 		<plugin active="1" executionorder="5">
 			<title>Get warning message</title>
 			<hookname>private_insertpm_process</hookname>
-			<phpcode><![CDATA[$is_work_with_pmwarning =false;
+			<phpcode><![CDATA[// Make shure to do nothing during registration
+if (THIS_SCRIPT == 'private')
+{
+
+$is_work_with_pmwarning =false;
 
 $vbulletin->input->clean_gpc('p', 'pm_warning_confirmed');
 if ('' == $vbulletin->GPC['preview'] && 1 == count($pmdm->info['recipients']))
@@ -226,6 +230,8 @@ if ('' == $vbulletin->GPC['preview'] && 1 == count($pmdm->info['recipients']))
             $db->query_write($sql);
         }
     }
+}
+
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
