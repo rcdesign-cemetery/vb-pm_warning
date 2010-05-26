@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<language name="Russian (RU)" vbversion="3.8.4" product="pm_warning" type="custom">
+<language name="Russian (RU)" vbversion="4.0.3" product="pm_warning" type="custom">
 	<settings>
 		<options><![CDATA[1]]></options>
 		<languagecode><![CDATA[ru]]></languagecode>
@@ -9,8 +9,8 @@
 		<dateoverride><![CDATA[d.m.Y]]></dateoverride>
 		<timeoverride><![CDATA[H:i]]></timeoverride>
 		<registereddateoverride><![CDATA[d.m.Y]]></registereddateoverride>
-		<calformat1override><![CDATA[j F Y]]></calformat1override>
-		<calformat2override><![CDATA[j F]]></calformat2override>
+		<calformat1override><![CDATA[d.m.Y]]></calformat1override>
+		<calformat2override><![CDATA[d.m]]></calformat2override>
 		<logdateoverride><![CDATA[H:i, d.m.Y]]></logdateoverride>
 		<locale />
 		<decimalsep><![CDATA[.]]></decimalsep>
@@ -24,6 +24,7 @@
 		<phrase name="pm_warning_from_recipient" date="1254455392" username="Vitaly"><![CDATA[Если уверены, что хотите отправить сообщение, нажмите кнопку еще раз]]></phrase>
 		<phrase name="pm_warning_post_new" date="1254454988" username="Vitaly"><![CDATA[Редактировать текст предупреждения]]></phrase>
 		<phrase name="pm_warning_status" date="1254455124" username="Vitaly"><![CDATA[Этот текст увидет каждый, кто попробует отправить сам личное собщение]]></phrase>
+		<phrase name="pm_warning_title_warning" date="1274448693" username="sawoy"><![CDATA[Предупреждение !]]></phrase>
 	</phrasetype>
 	<phrasetype name="vBulletin Settings" fieldname="vbsettings">
 		<phrase name="setting_pm_unnotified_period_desc" date="1254454484" username="Vitaly"><![CDATA[Скрывать предупреждение на ХХ дней после показа. Если пусто - всегда показывать.]]></phrase>
