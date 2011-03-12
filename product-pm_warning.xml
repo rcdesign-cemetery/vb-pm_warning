@@ -3,14 +3,14 @@
 <product productid="pm_warning" active="1">
 	<title>Private Message Warning</title>
 	<description>Shows custom warning, when someone try to send PM</description>
-	<version>0.8</version>
+	<version>0.9</version>
 	<url><![CDATA[http://www.vbulletin.org/forum/misc.php?do=producthelp&pid=pm_warning]]></url>
 	<versioncheckurl><![CDATA[http://www.vbulletin.org/forum/misc.php?do=productcheck&pid=pm_warning]]></versioncheckurl>
-	<apm_releasedate></apm_releasedate>
-	<apm_author></apm_author>
-	<apm_relatedurl></apm_relatedurl>
-	<apm_extrainfo></apm_extrainfo>
-	<apm_extraedit></apm_extraedit>
+	<apm_releasedate>0</apm_releasedate>
+	<apm_author />
+	<apm_relatedurl />
+	<apm_extrainfo />
+	<apm_extraedit />
 	<dependencies>
 	</dependencies>
 	<codes>
@@ -126,10 +126,26 @@ $db->query_write($sql);]]></phpcode>
     
     if ($need_warning_link)
     {
+        $before_patch = $vbulletin->templatecache['USERCP_SHELL'];
         $pmwarning_class = ($_REQUEST['do'] == 'pmwarning') ? 'active' : 'inactive';
         $pattern = '<li class="\' . $navclass[\'pm_editfolders\'] . \'"><a href="private.php?\' . $session[\'sessionurl\'] . \'do=editfolders">\' . vB_Template_Runtime::parsePhrase("edit_folders") . \'</a></li>';
         $replace = $pattern . '<li class="'.$pmwarning_class.'"><a href="private.php?\' . $session[\'sessionurl\'] . \'do=pmwarning">\' . vB_Template_Runtime::parsePhrase("usercp_menu_pm_warning_edit") . \'</a></li>';
         $vbulletin->templatecache['USERCP_SHELL'] = str_replace( $pattern, $replace, $vbulletin->templatecache['USERCP_SHELL'] );
+        if ($before_patch == $vbulletin->templatecache['USERCP_SHELL'])
+        {
+            $err_message = sprintf("Product '%s', error in hook %s : can't modify template '%s'",
+                                'Private Message Warning',
+                                'parse_templates',
+                                'USERCP_SHELL');
+            error_log($err_message); // Send to PHP error log
+            if ($vbulletin->debug)
+            {
+                trigger_error($err_message, E_USER_WARNING); // Display on page
+                require_once(DIR . '/includes/functions_log_error.php');
+                log_vbulletin_error($err_message, 'php'); // Send to vB error log
+            }
+            unset($err_message, $before_patch);
+        }
     }
 }]]></phpcode>
 		</plugin>
